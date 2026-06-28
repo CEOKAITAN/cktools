@@ -749,11 +749,16 @@ async function loadSheet(s) {
 
 function parseSheetCSV(csv) {
     const rows = csv.trim().split('\n').map(r => parseCSVRow(r));
-    if (rows.length < 3) return [];
-    // Row 0 = game header, Row 1 = col headers, Row 2+ = data
-    // Col A = Name Product, Col B = Username:Password, Col C = Cookie
+    // หาแถว header อัตโนมัติ (แถวที่มีคำว่า username)
+    let dataStart = 2;
+    for (let i = 0; i < Math.min(rows.length, 5); i++) {
+        if (rows[i].some(c => c.toLowerCase().includes('username'))) {
+            dataStart = i + 1;
+            break;
+        }
+    }
     const records = [];
-    for (let i = 2; i < rows.length; i++) {
+    for (let i = dataStart; i < rows.length; i++) {
         const [productRaw, upRaw, cookieRaw] = rows[i];
         if (!upRaw || !upRaw.trim()) continue;
         const up = upRaw.trim();
