@@ -227,17 +227,21 @@
             padding: 10px 16px; display: flex; align-items: center; gap: 8px;
         }
         .lookup-game { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
-        .lookup-fields { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+        .lookup-fields { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
         .lookup-field { display: flex; flex-direction: column; gap: 4px; }
         .lookup-field-label { font-size: 10px; font-weight: 700; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
         .lookup-field-value {
             font-family: var(--mono); font-size: 13px; color: var(--text);
             background: var(--surface-2); border: 1px solid var(--border);
-            border-radius: 6px; padding: 8px 12px; word-break: break-all;
-            cursor: pointer; transition: border-color 0.15s;
+            border-radius: 8px; padding: 12px 14px; word-break: break-all;
+            cursor: pointer; transition: border-color 0.15s; line-height: 1.6;
         }
         .lookup-field-value:hover { border-color: var(--accent); }
-        .lookup-field-value.cookie-val { font-size: 11px; color: var(--text-dim); }
+        .lookup-field-value.cookie-val {
+            font-size: 12px; color: var(--text-dim);
+            padding: 14px; line-height: 1.7; white-space: normal;
+            word-break: break-all;
+        }
         .lookup-empty {
             text-align: center; padding: 48px 20px; color: var(--text-dim); font-size: 14px;
         }
@@ -679,7 +683,7 @@ function clearCombo() {
 ══════════════════════════════════════════ */
 const SHEET_ID = '1QGwbWoEaz9I91G9k_5DWM8DPFycQr_8FoAvV8w2bzV0';
 // *** เพิ่มชื่อ Tab ใหม่ตรงนี้เมื่อสร้างเกมใหม่ ***
-const SHEET_NAMES = ['Bloxfruit', 'Grow A Garden2'];
+const SHEET_NAMES = ['Bloxfruit', 'Fisch', 'Grow A Garden2'];
 
 const SHEETS = SHEET_NAMES.map(name => ({
     name,
@@ -722,7 +726,7 @@ function renderChips() {
         chip.onclick = () => toggleSheetChip(chip, s.name);
         chips.appendChild(chip);
     });
-    chips.style.display = SHEETS.length <= 1 ? 'none' : 'flex';
+    chips.style.display = 'none';
 }
 
 function toggleSheetChip(el, name) {
@@ -857,11 +861,11 @@ async function doLookup() {
                 </div>
                 <div class="lookup-field">
                     <div class="lookup-field-label">Cookie</div>
-                    <div class="lookup-field-value cookie-val" onclick="copyText('${escapeAttr(r.cookie)}')" title="คลิกเพื่อคัดลอก">${escapeHtml(r.cookie.slice(0,60))}${r.cookie.length > 60 ? '...' : ''}</div>
+                    <div class="lookup-field-value cookie-val" onclick="copyText('${escapeAttr(r.cookie)}')" title="คลิกเพื่อคัดลอก">${escapeHtml(r.cookie)}</div>
                 </div>
                 <div class="lookup-field">
                     <div class="lookup-field-label">Combo (User:Pass:Cookie)</div>
-                    <div class="lookup-field-value cookie-val" onclick="copyText('${escapeAttr(combo)}')" title="คลิกเพื่อคัดลอก">${escapeHtml(combo.slice(0,80))}${combo.length > 80 ? '...' : ''}</div>
+                    <div class="lookup-field-value cookie-val" onclick="copyText('${escapeAttr(combo)}')" title="คลิกเพื่อคัดลอก">${escapeHtml(combo)}</div>
                 </div>
             </div>
         </div>`;
