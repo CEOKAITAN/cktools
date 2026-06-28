@@ -702,9 +702,11 @@ async function initLookup() {
         }));
         activeSheets = new Set(names);
         sheetsReady = true;
-        status.textContent = '';
+        status.textContent = `โหลดพบ ${names.length} เกม: ${names.join(', ')}`;
         renderChips();
-        SHEETS.forEach(s => loadSheet(s));
+        await Promise.all(SHEETS.map(s => loadSheet(s)));
+        const total = SHEETS.reduce((n, s) => n + (sheetData[s.name]?.length || 0), 0);
+        status.textContent = `พร้อม — โหลดข้อมูลแล้ว ${total} บัญชี จาก ${names.length} เกม`;
     } catch(e) {
         status.textContent = 'โหลดรายชื่อเกมไม่ได้ — ตรวจสอบว่า Sheet เป็น Public';
     }
