@@ -678,37 +678,36 @@ function clearCombo() {
    ACCOUNT LOOKUP
 ══════════════════════════════════════════ */
 const SHEET_ID = '1QGwbWoEaz9I91G9k_5DWM8DPFycQr_8FoAvV8w2bzV0';
-let SHEETS = [];
+// *** เพิ่มชื่อ Tab ใหม่ตรงนี้เมื่อสร้างเกมใหม่ ***
+const SHEET_NAMES = ['Bloxfruit', 'Grow A Garden2'];
+
+const SHEETS = SHEET_NAMES.map(name => ({
+    name,
+    url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`
+}));
 
 let sheetData = {};
-let activeSheets = new Set();
+let activeSheets = new Set(SHEET_NAMES);
 let sheetLoaded = {};
 let sheetsReady = false;
 
 async function initLookup() {
-    if (sheetsReady) return renderChips();
+    if (sheetsReady) return;
 
     const status = document.getElementById('lookupStatus');
-    status.innerHTML = '<span class="loading-spin"></span>กำลังโหลดรายชื่อเกม...';
+    status.innerHTML = '<span class="loading-spin"></span>กำลังโหลดข้อมูล...';
 
-    try {
-        const feedUrl = `https://spreadsheets.google.com/feeds/worksheets/${SHEET_ID}/public/basic?alt=json`;
-        const res = await fetch(feedUrl);
-        const json = await res.json();
-        const names = json.feed.entry.map(e => e.title.$t);
-        SHEETS = names.map(name => ({
-            name,
-            url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`
-        }));
-        activeSheets = new Set(names);
-        sheetsReady = true;
-        status.textContent = `โหลดพบ ${names.length} เกม: ${names.join(', ')}`;
-        renderChips();
-        await Promise.all(SHEETS.map(s => loadSheet(s)));
-        const total = SHEETS.reduce((n, s) => n + (sheetData[s.name]?.length || 0), 0);
-        status.textContent = `พร้อม — โหลดข้อมูลแล้ว ${total} บัญชี จาก ${names.length} เกม`;
-    } catch(e) {
-        status.textContent = 'โหลดรายชื่อเกมไม่ได้ — ตรวจสอบว่า Sheet เป็น Public';
+    await Promise.all(SHEETS.map(s => loadSheet(s)));
+    sheetsReady = true;
+    renderChips();
+
+    const total = SHEETS.reduce((n, s) => n + (sheetData[s.name]?.length || 0), 0);
+    const failed = SHEETS.filter(s => sheetLoaded[s.name] === 'error').map(s => s.name);
+    if (failed.length > 0) {
+        status.textContent = `โหลดไม่ได้: ${failed.join(', ')} — ตรวจสอบว่า Sheet เป็น "Anyone with the link"`;
+    } else {
+        status.textContent = `พร้อม — โหลดได้ ${total} บัญชี`;
+        setTimeout(() => { document.getElementById('lookupStatus').textContent = ''; }, 3000);
     }
 }
 
