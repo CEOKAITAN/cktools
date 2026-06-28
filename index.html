@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CK-TOOLS - Account Formatter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #161616;
+            --surface-2: #0f0f0f;
+            --border: #2a2a2a;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --accent: #e0314f;
+            --accent-hover: #f23a5a;
+            --green: #4ade80;
+            --yellow: #fbbf24;
+            --red: #f87171;
+            --mono: 'SF Mono', 'Monaco', 'Courier New', monospace;
+        }
+        body.light {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --surface-2: #f4f4f4;
+            --border: #e2e2e2;
+            --text: #1a1a1a;
+            --text-dim: #777;
+            --accent: #e0314f;
+            --accent-hover: #c41e3a;
+            --green: #16a34a;
+            --yellow: #d97706;
+            --red: #dc2626;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+        .container { max-width: 720px; margin: 0 auto; }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon {
+            width: 36px; height: 36px; border: 2px solid var(--accent);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; color: var(--accent); font-weight: bold;
+        }
+        .brand-name { font-family: 'Inter', sans-serif; font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+        .theme-toggle {
+            background-color: var(--surface); color: var(--text);
+            border: 1px solid var(--border); width: 40px; height: 40px;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-toggle:hover { border-color: var(--accent); }
+        .theme-toggle svg { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 2; }
+        .title { font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px; color: var(--text); }
+        .subtitle { font-size: 14px; line-height: 1.5; color: var(--text-dim); margin-bottom: 20px; }
+        .code {
+            font-family: var(--mono); color: var(--accent); font-size: 12px;
+            background-color: var(--surface-2); border: 1px solid var(--border);
+            padding: 2px 7px; border-radius: 5px; white-space: nowrap;
+        }
+        .stats {
+            grid-template-columns: repeat(4, 1fr); gap: 10px;
+            margin-bottom: 28px; display: none;
+        }
+        .stats.show { display: grid; }
+        .stat {
+            background-color: var(--surface); border: 2px solid var(--border);
+            border-radius: 10px; padding: 18px 10px; text-align: center;
+        }
+        .stat-num { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
+        .stat-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; font-weight: 600; }
+        .card {
+            background-color: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-bottom: 28px;
+        }
+        .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .lines { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+        textarea {
+            width: 100%; min-height: 220px; background-color: var(--surface-2);
+            border: 2px solid var(--border); border-radius: 8px; padding: 14px;
+            color: var(--text); font-family: var(--mono); font-size: 13px;
+            line-height: 1.6; resize: vertical; transition: border-color 0.2s ease;
+        }
+        textarea:focus { outline: none; border-color: var(--accent); }
+        textarea::placeholder { color: var(--text-dim); }
+        .buttons { display: flex; gap: 12px; margin-top: 16px; }
+        .btn {
+            flex: 1; padding: 13px; border-radius: 8px; font-size: 15px;
+            font-weight: 600; cursor: pointer; border: 1px solid transparent;
+            transition: all 0.2s ease; display: flex; align-items: center;
+            justify-content: center; gap: 8px;
+        }
+        .btn-primary { background-color: var(--accent); color: #fff; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-ghost { background-color: transparent; color: var(--text-dim); border-color: var(--border); }
+        .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+        .out-content {
+            background-color: var(--surface-2); border: 2px solid var(--border);
+            border-radius: 8px; padding: 14px; font-family: var(--mono);
+            font-size: 13px; line-height: 1.8; white-space: pre-wrap;
+            word-break: break-all; max-height: 240px; overflow-y: auto;
+            margin-bottom: 14px; color: var(--text);
+        }
+        .copy-btn {
+            width: 100%; padding: 12px; border-radius: 8px; font-size: 14px;
+            font-weight: 600; cursor: pointer; border: none;
+            background-color: var(--accent); color: #fff; transition: background-color 0.2s ease;
+        }
+        .copy-btn:hover { background-color: var(--accent-hover); }
+        .c-green { color: var(--green); }
+        .c-yellow { color: var(--yellow); }
+        .c-red { color: var(--red); }
+        #outputSection, #invalidSection, #duplicateSection { display: none; }
+        .group { border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+        .group-invalid { background-color: var(--surface); border: 1px solid var(--red); }
+        .group-duplicate { background-color: var(--surface); border: 1px solid var(--yellow); }
+        .group-label { font-size: 15px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .toast {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background-color: var(--green); color: #000; padding: 12px 24px;
+            border-radius: 10px; font-weight: 600; font-size: 14px; z-index: 1000;
+            opacity: 0; transition: all 0.3s ease;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .hint { text-align: center; font-size: 12px; color: var(--text-dim); margin-top: 20px; }
+        kbd {
+            background-color: var(--surface); border: 1px solid var(--border);
+            border-radius: 4px; padding: 2px 6px; font-family: var(--mono); font-size: 11px;
+        }
+        @media (max-width: 600px) {
+            .stat-num { font-size: 22px; }
+            .stat { padding: 14px 4px; }
+            .stat-label { font-size: 9px; letter-spacing: 0.5px; }
+            .title { font-size: 26px; }
+            .subtitle { font-size: 13px; }
+            .code { font-size: 11px; padding: 1px 5px; }
+        }
+    </style>
+</head>
+<body class="dark">
+    <div class="container">
+        <div class="header">
+            <div class="brand">
+                <div class="brand-name">CK-TOOLS</div>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme"></button>
+        </div>
+
+        <div class="stats" id="statsSection">
+            <div class="stat"><div class="stat-num" id="totalCount">0</div><div class="stat-label">TOTAL</div></div>
+            <div class="stat"><div class="stat-num c-green" id="validCount">0</div><div class="stat-label">VALID</div></div>
+            <div class="stat"><div class="stat-num c-yellow" id="duplicateCount">0</div><div class="stat-label">DUPLICATE</div></div>
+            <div class="stat"><div class="stat-num c-red" id="invalidCount">0</div><div class="stat-label">INVALID</div></div>
+        </div>
+
+        <div class="title">Account Formatter</div>
+        <div class="subtitle">แยกข้อมูล <span class="code">username:password:cookie</span> ออกเป็นส่วนๆ</div>
+
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title">Input</div>
+                <div class="lines"><span id="lineCount">0</span> lines</div>
+            </div>
+            <textarea id="inputText" placeholder="username:password:cookie&#10;username:password:cookie:email&#10;username:password:cookie:email:pass"></textarea>
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="formatAccounts()">Format</button>
+                <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+            </div>
+        </div>
+
+        <div id="outputSection"><div id="outputContent"></div></div>
+        <div id="invalidSection"><div id="invalidContent"></div></div>
+        <div id="duplicateSection"><div id="duplicateContent"></div></div>
+
+        <div class="hint">
+            <kbd>Ctrl</kbd>+<kbd>Enter</kbd> Format &nbsp;&middot;&nbsp; <kbd>Ctrl</kbd>+<kbd>L</kbd> Clear
+        </div>
+    </div>
+
+    <div class="toast" id="toast">&#10003; Copied!</div>
+
+    <script>
+        const inputText = document.getElementById('inputText');
+        const lineCount = document.getElementById('lineCount');
+        const outputSection = document.getElementById('outputSection');
+        const outputContent = document.getElementById('outputContent');
+
+        const MOON_ICON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+        const SUN_ICON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
+        (function initTheme() {
+            applyTheme(localStorage.getItem('xzin-theme') || 'dark');
+        })();
+
+        function applyTheme(theme) {
+            document.body.className = theme;
+            // show the icon for the mode you'll switch TO
+            document.getElementById('themeBtn').innerHTML = theme === 'light' ? MOON_ICON : SUN_ICON;
+        }
+
+        function toggleTheme() {
+            const next = document.body.classList.contains('light') ? 'dark' : 'light';
+            applyTheme(next);
+            localStorage.setItem('xzin-theme', next);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'Enter') { e.preventDefault(); formatAccounts(); }
+                else if (e.key.toLowerCase() === 'l') { e.preventDefault(); clearAll(); }
+            }
+        });
+
+        inputText.addEventListener('input', () => {
+            lineCount.textContent = inputText.value.split('\n').filter(l => l.trim()).length;
+        });
+
+        // Extract username:password key from any line (even malformed), using the cookie marker
+        function extractKey(line) {
+            const idx = line.indexOf('_|WARNING');
+            if (idx <= 0 || line[idx - 1] !== ':') return null;
+            const prefix = line.slice(0, idx - 1);
+            const head = prefix.split(':');
+            if (head.length !== 2 || !head[0] || !head[1]) return null;
+            return head[0] + ':' + head[1];
+        }
+
+        function parseLine(line) {
+            if (line !== line.trim()) return { error: 'Contains whitespace' };
+            if (/\s/.test(line)) return { error: 'Contains space/tab' };
+
+            // Colons per account must be exactly 3 (no email) or 5 (with email)
+            const colonCount = (line.match(/:/g) || []).length;
+            if (colonCount !== 3 && colonCount !== 5) return { error: 'Invalid colon count' };
+
+            // Anchor on the Roblox warning marker that marks the start of the cookie
+            const marker = '_|WARNING';
+            const idx = line.indexOf(marker);
+            if (idx === -1) return { error: 'No cookie found' };
+
+            // The character right before the marker MUST be a colon
+            if (idx === 0 || line[idx - 1] !== ':') return { error: 'Missing colon before cookie' };
+
+            // Prefix = username:password (everything before the marker, minus the colon)
+            let prefix = line.slice(0, idx - 1);
+            const head = prefix.split(':');
+            if (head.length !== 2 || !head[0] || !head[1]) return { error: 'Invalid format' };
+            const username = head[0];
+            const password = head[1];
+
+            // Rest = cookie + optional :email:emailpass
+            const rest = line.slice(idx);
+            const restParts = rest.split(':');
+            let cookie, email = null, emailPass = null;
+
+            // If the second-to-last segment contains @, treat last two as email:pass
+            if (restParts.length >= 3 && restParts[restParts.length - 2].includes('@')) {
+                cookie = restParts.slice(0, -2).join(':');
+                email = restParts[restParts.length - 2];
+                emailPass = restParts[restParts.length - 1];
+            } else {
+                cookie = rest;
+            }
+
+            if (!cookie) return { error: 'Invalid format' };
+
+            // cookie must contain at least one colon (proper structure)
+            if (!cookie.includes(':')) return { error: 'Invalid cookie' };
+
+            // cookie must NOT have more than 2 colons (extra = junk appended)
+            const cookieColons = (cookie.match(/:/g) || []).length;
+            if (cookieColons > 2) return { error: 'Cookie has too many colons' };
+
+            return { username, password, cookie, email, emailPass };
+        }
+
+        function formatAccounts() {
+            const input = inputText.value.trim();
+            if (!input) { alert('Please enter account information'); return; }
+
+            const lines = input.split('\n').filter(l => l.length > 0);
+            const stats = { total: lines.length, valid: 0, invalid: 0, duplicate: 0 };
+            const valid = [], invalidLines = [], duplicateLines = [];
+
+            // Count user:pass keys only for lines WITHOUT whitespace (clean lines)
+            const keyCount = new Map();
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                if (line !== line.trim() || /\s/.test(line)) return; // skip whitespace lines
+                const key = extractKey(line);
+                if (key) keyCount.set(key, (keyCount.get(key) || 0) + 1);
+            });
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+
+                // Whitespace check FIRST → always Invalid (even if user:pass is duplicated)
+                if (line !== line.trim() || /\s/.test(line)) {
+                    stats.invalid++;
+                    invalidLines.push(line);
+                    return;
+                }
+
+                // If this line's user:pass is duplicated → fail both (duplicate box)
+                const key = extractKey(line);
+                if (key && keyCount.get(key) > 1) {
+                    stats.duplicate++;
+                    duplicateLines.push(line);
+                    return;
+                }
+
+                // Otherwise validate normally
+                const acc = parseLine(line);
+                if (acc.error) { stats.invalid++; invalidLines.push(line); return; }
+                stats.valid++;
+                valid.push(acc);
+            });
+
+            // Group duplicates by order of first appearance in input (not alphabetical)
+            const firstIdx = new Map();
+            duplicateLines.forEach((line, i) => {
+                const k = extractKey(line) || line;
+                if (!firstIdx.has(k)) firstIdx.set(k, i);
+            });
+            duplicateLines.sort((a, b) => {
+                const ka = extractKey(a) || a;
+                const kb = extractKey(b) || b;
+                return firstIdx.get(ka) - firstIdx.get(kb);
+            });
+
+            renderStats(stats);
+            renderOutput(valid);
+            renderInvalid(invalidLines);
+            renderDuplicate(duplicateLines);
+        }
+
+        function renderStats(s) {
+            totalCount.textContent = s.total;
+            validCount.textContent = s.valid;
+            duplicateCount.textContent = s.duplicate;
+            invalidCount.textContent = s.invalid;
+            document.getElementById('statsSection').classList.add('show');
+        }
+
+        function buildBoxes(accounts, copyFn) {
+            const up = [], ck = [], cb = [], ep = [];
+            accounts.forEach(a => {
+                up.push(a.username + ':' + a.password);
+                ck.push(a.cookie);
+                cb.push(a.username + ':' + a.password + ':' + a.cookie);
+                if (a.email && a.emailPass) ep.push(a.email + ':' + a.emailPass);
+            });
+            const box = (title, cls, list, key) =>
+                '<div class="card"><div class="card-head"><div class="card-title ' + cls + '">' + title +
+                '</div><div class="lines">' + list.length + ' lines</div></div>' +
+                '<div class="out-content">' + list.map(escapeHtml).join('\n') + '</div>' +
+                '<button class="copy-btn" onclick="' + copyFn + '(\'' + key + '\')">Copy ' + title + '</button></div>';
+
+            let html = box('User:Pass', 'c-green', up, 'userpass');
+            html += box('Cookie', 'c-yellow', ck, 'cookie');
+            html += box('Combo', '', cb, 'combo');
+            if (ep.length > 0) html += box('Email:Pass', 'c-yellow', ep, 'emailpass');
+            return { html: html, data: { userpass: up, cookie: ck, combo: cb, emailpass: ep } };
+        }
+
+        function renderOutput(accounts) {
+            if (accounts.length === 0) { outputSection.style.display = 'none'; return; }
+            const r = buildBoxes(accounts, 'copyOutput');
+            outputContent.innerHTML = r.html;
+            outputSection.style.display = 'block';
+            window.outputData = r.data;
+        }
+        function copyOutput(key) { copyData(window.outputData[key]); }
+
+        function renderDuplicate(lines) {
+            const sec = document.getElementById('duplicateSection');
+            if (lines.length === 0) { sec.style.display = 'none'; return; }
+            document.getElementById('duplicateContent').innerHTML =
+                '<div class="group group-duplicate"><div class="group-label c-yellow">Duplicate Accounts \u00B7 ' +
+                lines.length + '</div><div class="out-content c-yellow">' + lines.map(escapeHtml).join('\n') +
+                '</div><button class="copy-btn" onclick="copyDuplicate()" style="background-color: var(--yellow); color: #000;">Copy Duplicate</button></div>';
+            sec.style.display = 'block';
+            window.duplicateData = lines;
+        }
+        function copyDuplicate() { copyData(window.duplicateData); }
+
+        function renderInvalid(lines) {
+            const sec = document.getElementById('invalidSection');
+            if (lines.length === 0) { sec.style.display = 'none'; return; }
+            document.getElementById('invalidContent').innerHTML =
+                '<div class="group group-invalid"><div class="group-label c-red">Invalid Accounts \u00B7 ' +
+                lines.length + '</div><div class="out-content c-red">' + lines.map(escapeHtml).join('\n') +
+                '</div><button class="copy-btn" onclick="copyInvalid()">Copy Invalid</button></div>';
+            sec.style.display = 'block';
+            window.invalidData = lines;
+        }
+        function copyInvalid() { copyData(window.invalidData); }
+
+        function copyData(list) {
+            if (list && list.length > 0) {
+                navigator.clipboard.writeText(list.join('\n')).then(showToast);
+            }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 1800);
+        }
+
+        function clearAll() {
+            inputText.value = '';
+            lineCount.textContent = '0';
+            outputSection.style.display = 'none';
+            outputContent.innerHTML = '';
+            document.getElementById('statsSection').classList.remove('show');
+            document.getElementById('invalidSection').style.display = 'none';
+            document.getElementById('invalidContent').innerHTML = '';
+            document.getElementById('duplicateSection').style.display = 'none';
+            document.getElementById('duplicateContent').innerHTML = '';
+        }
+
+        function escapeHtml(t) {
+            const m = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return t.replace(/[&<>"']/g, c => m[c]);
+        }
+    </script>
+</body>
+</html>
