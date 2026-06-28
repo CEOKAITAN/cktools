@@ -742,8 +742,10 @@ async function loadSheet(s) {
         const text = await res.text();
         sheetData[s.name] = parseSheetCSV(text);
         sheetLoaded[s.name] = true;
+        console.log(`[${s.name}] โหลดได้ ${sheetData[s.name].length} บัญชี`, sheetData[s.name].slice(0,2));
     } catch(e) {
         sheetLoaded[s.name] = 'error';
+        console.error(`[${s.name}] โหลดไม่ได้:`, e);
     }
 }
 
