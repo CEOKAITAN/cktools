@@ -262,6 +262,41 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ── DISCORD CDN ── */
+        .cdn-webhook-wrap {
+            display: flex; gap: 10px; align-items: center; margin-bottom: 16px;
+        }
+        .cdn-webhook-input {
+            flex: 1; padding: 11px 14px;
+            background-color: var(--surface-2); border: 2px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: var(--mono);
+            font-size: 12px; transition: border-color 0.2s ease;
+        }
+        .cdn-webhook-input:focus { outline: none; border-color: var(--accent); }
+        .cdn-webhook-input::placeholder { color: var(--text-dim); }
+        .cdn-save-btn {
+            padding: 11px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+            color: var(--text); white-space: nowrap; transition: all 0.2s;
+        }
+        .cdn-save-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .cdn-result-box {
+            background: var(--surface-2); border: 2px solid var(--border);
+            border-radius: 10px; padding: 16px; margin-top: 16px;
+            display: none; word-break: break-all;
+        }
+        .cdn-result-box.show { display: block; }
+        .cdn-link {
+            font-family: var(--mono); font-size: 13px; color: var(--green);
+            line-height: 1.6; margin-bottom: 14px;
+        }
+        .cdn-status {
+            font-size: 13px; min-height: 20px; margin-top: 12px;
+            font-family: var(--mono); color: var(--text-dim);
+        }
+        .cdn-status.error { color: var(--red); }
+        .cdn-status.ok { color: var(--green); }
+
         @media (max-width: 600px) {
             .stat-num { font-size: 22px; }
             .stat { padding: 14px 4px; }
@@ -295,6 +330,9 @@
                     </button>
                     <button class="menu-item" id="menu-lookup" onclick="switchTool('lookup')">
                         <div class="menu-ico">🔍</div>Account Lookup
+                    </button>
+                    <button class="menu-item" id="menu-cdn" onclick="switchTool('cdn')">
+                        <div class="menu-ico">📎</div>Discord CDN
                     </button>
                     <div class="menu-divider"></div>
                     <a href="index.html" class="menu-back">
@@ -416,6 +454,50 @@
             <div class="lookup-empty">พิมพ์ username แล้วกด Enter หรือกดปุ่มค้นหา</div>
         </div>
 
+    </div>
+
+    <!-- ════════════════════════════════════════
+         PAGE 4: DISCORD CDN
+    ════════════════════════════════════════ -->
+    <div class="page" id="page-cdn">
+
+        <div class="title">Discord CDN</div>
+        <div class="subtitle">อัปโหลดข้อความเป็นไฟล์ → รับ <span class="code">cdn.discordapp.com</span> link</div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-head" style="margin-bottom:10px;">
+                <div class="card-title" style="font-size:13px;color:var(--text-dim);">DISCORD WEBHOOK URL</div>
+            </div>
+            <div class="cdn-webhook-wrap">
+                <input class="cdn-webhook-input" id="webhookInput" type="password"
+                    placeholder="https://discord.com/api/webhooks/..." />
+                <button class="cdn-save-btn" onclick="saveWebhook()">บันทึก</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);">Webhook URL เก็บในเครื่องคุณเท่านั้น ไม่ได้ส่งไปไหน นอกจาก Discord</div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title">ข้อความที่ต้องการอัปโหลด</div>
+                <div class="lines"><span id="cdnLineCount">0</span> lines</div>
+            </div>
+            <textarea id="cdnInput" placeholder="พิมพ์หรือวางข้อความที่นี่..." oninput="document.getElementById('cdnLineCount').textContent=this.value.split('\n').filter(l=>l.trim()).length"></textarea>
+            <div class="buttons">
+                <button class="btn btn-primary" id="cdnUploadBtn" onclick="uploadToCDN()">อัปโหลด → CDN Link</button>
+                <button class="btn btn-ghost" onclick="clearCDN()">Clear</button>
+            </div>
+            <div class="cdn-status" id="cdnStatus"></div>
+        </div>
+
+        <div class="cdn-result-box" id="cdnResult">
+            <div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">CDN Link</div>
+            <div class="cdn-link" id="cdnLink"></div>
+            <button class="copy-btn" onclick="copyCDNLink()">Copy Link</button>
+        </div>
+
+        <div class="hint" style="margin-top:24px;">
+            ไฟล์จะถูกส่งผ่าน Webhook ของคุณ — ไม่ต้องเปิดคอมค้างไว้ เพราะไม่มีบอท
+        </div>
     </div>
 
 </div><!-- end .container -->
@@ -894,6 +976,101 @@ function showToast() {
 function escapeHtml(t) {
     const m = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' };
     return t.replace(/[&<>"']/g, c => m[c]);
+}
+
+/* ══════════════════════════════════════════
+   DISCORD CDN
+══════════════════════════════════════════ */
+(function() {
+    const saved = localStorage.getItem('ck-webhook');
+    if (saved) document.getElementById('webhookInput').value = saved;
+})();
+
+function saveWebhook() {
+    const url = document.getElementById('webhookInput').value.trim();
+    if (!url.startsWith('https://discord.com/api/webhooks/') && !url.startsWith('https://discordapp.com/api/webhooks/')) {
+        setStatus('cdnStatus', '❌ URL ไม่ถูกต้อง — ต้องขึ้นต้นด้วย https://discord.com/api/webhooks/', 'error');
+        return;
+    }
+    localStorage.setItem('ck-webhook', url);
+    setStatus('cdnStatus', '✓ บันทึก Webhook URL แล้ว', 'ok');
+    setTimeout(() => setStatus('cdnStatus', '', ''), 2500);
+}
+
+async function uploadToCDN() {
+    const webhookUrl = document.getElementById('webhookInput').value.trim();
+    const text = document.getElementById('cdnInput').value;
+
+    if (!webhookUrl) {
+        setStatus('cdnStatus', '❌ กรุณากรอก Webhook URL ก่อน', 'error'); return;
+    }
+    if (!text.trim()) {
+        setStatus('cdnStatus', '❌ กรุณาใส่ข้อความ', 'error'); return;
+    }
+
+    const btn = document.getElementById('cdnUploadBtn');
+    btn.disabled = true;
+    btn.textContent = 'กำลังอัปโหลด...';
+    setStatus('cdnStatus', '<span class="loading-spin"></span>กำลังส่งไปยัง Discord...', '');
+    document.getElementById('cdnStatus').innerHTML = '<span class="loading-spin"></span>กำลังส่งไปยัง Discord...';
+
+    try {
+        const blob = new Blob([text], { type: 'text/plain' });
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `ck-${ts}.txt`;
+
+        const form = new FormData();
+        form.append('file', blob, filename);
+
+        const res = await fetch(webhookUrl + '?wait=true', {
+            method: 'POST',
+            body: form
+        });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Discord ตอบกลับ ${res.status}: ${errText}`);
+        }
+
+        const data = await res.json();
+        const attachment = data.attachments && data.attachments[0];
+        if (!attachment || !attachment.url) {
+            throw new Error('ไม่พบ URL ในการตอบกลับ');
+        }
+
+        const cdnLink = attachment.url;
+        document.getElementById('cdnLink').textContent = cdnLink;
+        document.getElementById('cdnResult').classList.add('show');
+        window.lastCDNLink = cdnLink;
+        setStatus('cdnStatus', '✓ อัปโหลดสำเร็จ!', 'ok');
+
+    } catch(e) {
+        setStatus('cdnStatus', '❌ ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'อัปโหลด → CDN Link';
+    }
+}
+
+function copyCDNLink() {
+    if (window.lastCDNLink) {
+        navigator.clipboard.writeText(window.lastCDNLink).then(showToast);
+    }
+}
+
+function clearCDN() {
+    document.getElementById('cdnInput').value = '';
+    document.getElementById('cdnLineCount').textContent = '0';
+    document.getElementById('cdnResult').classList.remove('show');
+    document.getElementById('cdnLink').textContent = '';
+    setStatus('cdnStatus', '', '');
+    window.lastCDNLink = null;
+}
+
+function setStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = msg;
+    el.className = 'cdn-status' + (type ? ' ' + type : '');
 }
 </script>
 </body>
