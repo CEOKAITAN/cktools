@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CK-TOOLS - Account Formatter</title>
+    <title>CK-TOOLS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0a0a0a;
@@ -48,52 +48,76 @@
         .header {
             display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+            position: relative;
         }
         .brand { display: flex; align-items: center; gap: 12px; }
-        .brand-icon {
-            width: 36px; height: 36px; border: 2px solid var(--accent);
-            border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; color: var(--accent); font-weight: bold;
-        }
-        .brand-name { font-family: 'Inter', sans-serif; font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
-        .theme-toggle {
+        .brand-name { font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .icon-btn {
             background-color: var(--surface); color: var(--text);
             border: 1px solid var(--border); width: 40px; height: 40px;
             border-radius: 8px; cursor: pointer; transition: all 0.2s ease;
             display: flex; align-items: center; justify-content: center;
+            position: relative;
         }
-        .theme-toggle:hover { border-color: var(--accent); }
-        .theme-toggle svg { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 2; }
-        .title { font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px; color: var(--text); }
+        .icon-btn:hover { border-color: var(--accent); }
+        .icon-btn svg { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 2; }
+        .menu-dropdown {
+            position: absolute; top: calc(100% + 8px); right: 0;
+            background-color: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; min-width: 220px; z-index: 100;
+            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            opacity: 0; transform: translateY(-8px) scale(0.97);
+            pointer-events: none; transition: all 0.18s ease;
+        }
+        .menu-dropdown.open {
+            opacity: 1; transform: translateY(0) scale(1); pointer-events: all;
+        }
+        .menu-label {
+            padding: 10px 14px 6px; font-size: 10px; font-weight: 700;
+            color: var(--text-dim); letter-spacing: 1.2px; text-transform: uppercase;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px; cursor: pointer; transition: background 0.15s;
+            font-size: 14px; font-weight: 500; color: var(--text);
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .menu-item:hover { background-color: var(--surface-2); }
+        .menu-item.active { color: var(--accent); }
+        .menu-item .menu-ico {
+            width: 30px; height: 30px; border-radius: 7px;
+            background-color: var(--surface-2); display: flex;
+            align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+        }
+        .menu-item.active .menu-ico { background-color: rgba(224,49,79,0.12); }
+        .menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+        .menu-back {
+            display: flex; align-items: center; gap: 8px; padding: 10px 14px 12px;
+            font-size: 12px; color: var(--text-dim); text-decoration: none;
+            transition: color 0.15s;
+        }
+        .menu-back:hover { color: var(--text); }
+        .page { display: none; }
+        .page.active { display: block; }
+        .title { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px; }
         .subtitle { font-size: 14px; line-height: 1.5; color: var(--text-dim); margin-bottom: 20px; }
         .code {
             font-family: var(--mono); color: var(--accent); font-size: 12px;
             background-color: var(--surface-2); border: 1px solid var(--border);
             padding: 2px 7px; border-radius: 5px; white-space: nowrap;
         }
-        .stats {
-            grid-template-columns: repeat(4, 1fr); gap: 10px;
-            margin-bottom: 28px; display: none;
-        }
+        .stats { grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; display: none; }
         .stats.show { display: grid; }
-        .stat {
-            background-color: var(--surface); border: 2px solid var(--border);
-            border-radius: 10px; padding: 18px 10px; text-align: center;
-        }
+        .stat { background-color: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 18px 10px; text-align: center; }
         .stat-num { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
         .stat-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; font-weight: 600; }
-        .card {
-            background-color: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 0;
-            margin-bottom: 28px;
-        }
+        .card { background-color: transparent; border: none; border-radius: 0; padding: 0; margin-bottom: 28px; }
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
         .card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .lines { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
         textarea {
-            width: 100%; min-height: 220px; background-color: var(--surface-2);
+            width: 100%; min-height: 180px; background-color: var(--surface-2);
             border: 2px solid var(--border); border-radius: 8px; padding: 14px;
             color: var(--text); font-family: var(--mono); font-size: 13px;
             line-height: 1.6; resize: vertical; transition: border-color 0.2s ease;
@@ -127,7 +151,6 @@
         .c-green { color: var(--green); }
         .c-yellow { color: var(--yellow); }
         .c-red { color: var(--red); }
-        #outputSection, #invalidSection, #duplicateSection { display: none; }
         .group { border-radius: 12px; padding: 18px; margin-bottom: 20px; }
         .group-invalid { background-color: var(--surface); border: 1px solid var(--red); }
         .group-duplicate { background-color: var(--surface); border: 1px solid var(--yellow); }
@@ -141,307 +164,247 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .hint { text-align: center; font-size: 12px; color: var(--text-dim); margin-top: 20px; }
-        kbd {
-            background-color: var(--surface); border: 1px solid var(--border);
-            border-radius: 4px; padding: 2px 6px; font-family: var(--mono); font-size: 11px;
+        kbd { background-color: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--mono); font-size: 11px; }
+        .combo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0; }
+        .combo-col label { display: block; font-size: 13px; font-weight: 600; color: var(--text-dim); margin-bottom: 8px; letter-spacing: 0.5px; }
+        .combo-col textarea { min-height: 200px; }
+        .combo-result { margin-top: 16px; }
+        .count-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 6px; padding: 4px 10px; font-size: 12px;
+            font-family: var(--mono); color: var(--text-dim);
         }
+        .count-pill span { color: var(--accent); font-weight: 600; }
+        .mismatch-warn {
+            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 8px; padding: 10px 14px; font-size: 13px;
+            color: var(--yellow); margin-top: 12px; display: none;
+        }
+        .mismatch-warn.show { display: block; }
         @media (max-width: 600px) {
             .stat-num { font-size: 22px; }
             .stat { padding: 14px 4px; }
             .stat-label { font-size: 9px; letter-spacing: 0.5px; }
             .title { font-size: 26px; }
-            .subtitle { font-size: 13px; }
-            .code { font-size: 11px; padding: 1px 5px; }
+            .combo-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body class="dark">
-    <div class="container">
-        <div class="header">
-            <div class="brand">
-                <div class="brand-name">CK-TOOLS</div>
-            </div>
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme"></button>
-        </div>
+<div class="container">
 
+    <div class="header">
+        <div class="brand">
+            <div class="brand-name">CK-TOOLS</div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme"></button>
+            <div style="position:relative;">
+                <button class="icon-btn" onclick="toggleMenu()" id="menuBtn" aria-label="Menu">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="menu-dropdown" id="menuDropdown">
+                    <div class="menu-label">เครื่องมือ</div>
+                    <button class="menu-item active" id="menu-formatter" onclick="switchTool('formatter')">
+                        <div class="menu-ico">⚙️</div>Account Formatter
+                    </button>
+                    <button class="menu-item" id="menu-combo" onclick="switchTool('combo')">
+                        <div class="menu-ico">🔗</div>Combo Builder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page active" id="page-formatter">
         <div class="stats" id="statsSection">
             <div class="stat"><div class="stat-num" id="totalCount">0</div><div class="stat-label">TOTAL</div></div>
             <div class="stat"><div class="stat-num c-green" id="validCount">0</div><div class="stat-label">VALID</div></div>
             <div class="stat"><div class="stat-num c-yellow" id="duplicateCount">0</div><div class="stat-label">DUPLICATE</div></div>
             <div class="stat"><div class="stat-num c-red" id="invalidCount">0</div><div class="stat-label">INVALID</div></div>
         </div>
-
         <div class="title">Account Formatter</div>
         <div class="subtitle">แยกข้อมูล <span class="code">username:password:cookie</span> ออกเป็นส่วนๆ</div>
-
         <div class="card">
             <div class="card-head">
                 <div class="card-title">Input</div>
                 <div class="lines"><span id="lineCount">0</span> lines</div>
             </div>
-            <textarea id="inputText" placeholder="username:password:cookie&#10;username:password:cookie:email&#10;username:password:cookie:email:pass"></textarea>
+            <textarea id="inputText" placeholder="username:password:cookie&#10;username:password:cookie:email:emailpass"></textarea>
             <div class="buttons">
                 <button class="btn btn-primary" onclick="formatAccounts()">Format</button>
-                <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+                <button class="btn btn-ghost" onclick="clearFormatter()">Clear</button>
             </div>
         </div>
-
         <div id="outputSection"><div id="outputContent"></div></div>
         <div id="invalidSection"><div id="invalidContent"></div></div>
         <div id="duplicateSection"><div id="duplicateContent"></div></div>
-
-        <div class="hint">
-            <kbd>Ctrl</kbd>+<kbd>Enter</kbd> Format &nbsp;&middot;&nbsp; <kbd>Ctrl</kbd>+<kbd>L</kbd> Clear
-        </div>
+        <div class="hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Format &nbsp;&middot;&nbsp; <kbd>Ctrl</kbd>+<kbd>L</kbd> Clear</div>
     </div>
 
-    <div class="toast" id="toast">&#10003; Copied!</div>
+    <div class="page" id="page-combo">
+        <div class="title">Combo Builder</div>
+        <div class="subtitle">รวม <span class="code">User:Pass</span> + <span class="code">Cookie</span> → <span class="code">User:Pass:Cookie</span></div>
+        <div class="card">
+            <div class="combo-row">
+                <div class="combo-col">
+                    <label>USER:PASS &nbsp;<span class="count-pill"><span id="upCount">0</span> lines</span></label>
+                    <textarea id="upInput" placeholder="username:password&#10;username2:password2" oninput="updateComboCounts()"></textarea>
+                </div>
+                <div class="combo-col">
+                    <label>COOKIE &nbsp;<span class="count-pill"><span id="ckCount">0</span> lines</span></label>
+                    <textarea id="ckInput" placeholder="_|WARNING:-DO-NOT-SHARE-THIS..." oninput="updateComboCounts()"></textarea>
+                </div>
+            </div>
+            <div class="mismatch-warn" id="mismatchWarn">
+                ⚠️ จำนวนบรรทัดไม่เท่ากัน — จะรวมได้แค่ <span id="matchCount">0</span> คู่
+            </div>
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="buildCombo()">Build Combo</button>
+                <button class="btn btn-ghost" onclick="clearCombo()">Clear</button>
+            </div>
+        </div>
+        <div class="combo-result" id="comboResult" style="display:none;">
+            <div class="card-head" style="margin-bottom:14px;">
+                <div class="card-title c-green">ผลลัพธ์</div>
+                <div class="lines"><span id="comboCount">0</span> lines</div>
+            </div>
+            <div class="out-content" id="comboOutput"></div>
+            <button class="copy-btn" onclick="copyCombo()">Copy Combo</button>
+        </div>
+        <div class="hint" style="margin-top:24px;">วางบรรทัดละ 1 account — จะจับคู่ตามลำดับบรรทัด</div>
+    </div>
 
-    <script>
-        const inputText = document.getElementById('inputText');
-        const lineCount = document.getElementById('lineCount');
-        const outputSection = document.getElementById('outputSection');
-        const outputContent = document.getElementById('outputContent');
-
-        const MOON_ICON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-        const SUN_ICON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
-
-        (function initTheme() {
-            applyTheme(localStorage.getItem('xzin-theme') || 'dark');
-        })();
-
-        function applyTheme(theme) {
-            document.body.className = theme;
-            // show the icon for the mode you'll switch TO
-            document.getElementById('themeBtn').innerHTML = theme === 'light' ? MOON_ICON : SUN_ICON;
-        }
-
-        function toggleTheme() {
-            const next = document.body.classList.contains('light') ? 'dark' : 'light';
-            applyTheme(next);
-            localStorage.setItem('xzin-theme', next);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                if (e.key === 'Enter') { e.preventDefault(); formatAccounts(); }
-                else if (e.key.toLowerCase() === 'l') { e.preventDefault(); clearAll(); }
-            }
-        });
-
-        inputText.addEventListener('input', () => {
-            lineCount.textContent = inputText.value.split('\n').filter(l => l.trim()).length;
-        });
-
-        // Extract username:password key from any line (even malformed), using the cookie marker
-        function extractKey(line) {
-            const idx = line.indexOf('_|WARNING');
-            if (idx <= 0 || line[idx - 1] !== ':') return null;
-            const prefix = line.slice(0, idx - 1);
-            const head = prefix.split(':');
-            if (head.length !== 2 || !head[0] || !head[1]) return null;
-            return head[0] + ':' + head[1];
-        }
-
-        function parseLine(line) {
-            if (line !== line.trim()) return { error: 'Contains whitespace' };
-            if (/\s/.test(line)) return { error: 'Contains space/tab' };
-
-            // Colons per account must be exactly 3 (no email) or 5 (with email)
-            const colonCount = (line.match(/:/g) || []).length;
-            if (colonCount !== 3 && colonCount !== 5) return { error: 'Invalid colon count' };
-
-            // Anchor on the Roblox warning marker that marks the start of the cookie
-            const marker = '_|WARNING';
-            const idx = line.indexOf(marker);
-            if (idx === -1) return { error: 'No cookie found' };
-
-            // The character right before the marker MUST be a colon
-            if (idx === 0 || line[idx - 1] !== ':') return { error: 'Missing colon before cookie' };
-
-            // Prefix = username:password (everything before the marker, minus the colon)
-            let prefix = line.slice(0, idx - 1);
-            const head = prefix.split(':');
-            if (head.length !== 2 || !head[0] || !head[1]) return { error: 'Invalid format' };
-            const username = head[0];
-            const password = head[1];
-
-            // Rest = cookie + optional :email:emailpass
-            const rest = line.slice(idx);
-            const restParts = rest.split(':');
-            let cookie, email = null, emailPass = null;
-
-            // If the second-to-last segment contains @, treat last two as email:pass
-            if (restParts.length >= 3 && restParts[restParts.length - 2].includes('@')) {
-                cookie = restParts.slice(0, -2).join(':');
-                email = restParts[restParts.length - 2];
-                emailPass = restParts[restParts.length - 1];
-            } else {
-                cookie = rest;
-            }
-
-            if (!cookie) return { error: 'Invalid format' };
-
-            // cookie must contain at least one colon (proper structure)
-            if (!cookie.includes(':')) return { error: 'Invalid cookie' };
-
-            // cookie must NOT have more than 2 colons (extra = junk appended)
-            const cookieColons = (cookie.match(/:/g) || []).length;
-            if (cookieColons > 2) return { error: 'Cookie has too many colons' };
-
-            return { username, password, cookie, email, emailPass };
-        }
-
-        function formatAccounts() {
-            const input = inputText.value.trim();
-            if (!input) { alert('Please enter account information'); return; }
-
-            const lines = input.split('\n').filter(l => l.length > 0);
-            const stats = { total: lines.length, valid: 0, invalid: 0, duplicate: 0 };
-            const valid = [], invalidLines = [], duplicateLines = [];
-
-            // Count user:pass keys only for lines WITHOUT whitespace (clean lines)
-            const keyCount = new Map();
-            lines.forEach(line => {
-                if (!line.trim()) return;
-                if (line !== line.trim() || /\s/.test(line)) return; // skip whitespace lines
-                const key = extractKey(line);
-                if (key) keyCount.set(key, (keyCount.get(key) || 0) + 1);
-            });
-
-            lines.forEach(line => {
-                if (!line.trim()) return;
-
-                // Whitespace check FIRST → always Invalid (even if user:pass is duplicated)
-                if (line !== line.trim() || /\s/.test(line)) {
-                    stats.invalid++;
-                    invalidLines.push(line);
-                    return;
-                }
-
-                // If this line's user:pass is duplicated → fail both (duplicate box)
-                const key = extractKey(line);
-                if (key && keyCount.get(key) > 1) {
-                    stats.duplicate++;
-                    duplicateLines.push(line);
-                    return;
-                }
-
-                // Otherwise validate normally
-                const acc = parseLine(line);
-                if (acc.error) { stats.invalid++; invalidLines.push(line); return; }
-                stats.valid++;
-                valid.push(acc);
-            });
-
-            // Group duplicates by order of first appearance in input (not alphabetical)
-            const firstIdx = new Map();
-            duplicateLines.forEach((line, i) => {
-                const k = extractKey(line) || line;
-                if (!firstIdx.has(k)) firstIdx.set(k, i);
-            });
-            duplicateLines.sort((a, b) => {
-                const ka = extractKey(a) || a;
-                const kb = extractKey(b) || b;
-                return firstIdx.get(ka) - firstIdx.get(kb);
-            });
-
-            renderStats(stats);
-            renderOutput(valid);
-            renderInvalid(invalidLines);
-            renderDuplicate(duplicateLines);
-        }
-
-        function renderStats(s) {
-            totalCount.textContent = s.total;
-            validCount.textContent = s.valid;
-            duplicateCount.textContent = s.duplicate;
-            invalidCount.textContent = s.invalid;
-            document.getElementById('statsSection').classList.add('show');
-        }
-
-        function buildBoxes(accounts, copyFn) {
-            const up = [], ck = [], cb = [], ep = [];
-            accounts.forEach(a => {
-                up.push(a.username + ':' + a.password);
-                ck.push(a.cookie);
-                cb.push(a.username + ':' + a.password + ':' + a.cookie);
-                if (a.email && a.emailPass) ep.push(a.email + ':' + a.emailPass);
-            });
-            const box = (title, cls, list, key) =>
-                '<div class="card"><div class="card-head"><div class="card-title ' + cls + '">' + title +
-                '</div><div class="lines">' + list.length + ' lines</div></div>' +
-                '<div class="out-content">' + list.map(escapeHtml).join('\n') + '</div>' +
-                '<button class="copy-btn" onclick="' + copyFn + '(\'' + key + '\')">Copy ' + title + '</button></div>';
-
-            let html = box('User:Pass', 'c-green', up, 'userpass');
-            html += box('Cookie', 'c-yellow', ck, 'cookie');
-            html += box('Combo', '', cb, 'combo');
-            if (ep.length > 0) html += box('Email:Pass', 'c-yellow', ep, 'emailpass');
-            return { html: html, data: { userpass: up, cookie: ck, combo: cb, emailpass: ep } };
-        }
-
-        function renderOutput(accounts) {
-            if (accounts.length === 0) { outputSection.style.display = 'none'; return; }
-            const r = buildBoxes(accounts, 'copyOutput');
-            outputContent.innerHTML = r.html;
-            outputSection.style.display = 'block';
-            window.outputData = r.data;
-        }
-        function copyOutput(key) { copyData(window.outputData[key]); }
-
-        function renderDuplicate(lines) {
-            const sec = document.getElementById('duplicateSection');
-            if (lines.length === 0) { sec.style.display = 'none'; return; }
-            document.getElementById('duplicateContent').innerHTML =
-                '<div class="group group-duplicate"><div class="group-label c-yellow">Duplicate Accounts \u00B7 ' +
-                lines.length + '</div><div class="out-content c-yellow">' + lines.map(escapeHtml).join('\n') +
-                '</div><button class="copy-btn" onclick="copyDuplicate()" style="background-color: var(--yellow); color: #000;">Copy Duplicate</button></div>';
-            sec.style.display = 'block';
-            window.duplicateData = lines;
-        }
-        function copyDuplicate() { copyData(window.duplicateData); }
-
-        function renderInvalid(lines) {
-            const sec = document.getElementById('invalidSection');
-            if (lines.length === 0) { sec.style.display = 'none'; return; }
-            document.getElementById('invalidContent').innerHTML =
-                '<div class="group group-invalid"><div class="group-label c-red">Invalid Accounts \u00B7 ' +
-                lines.length + '</div><div class="out-content c-red">' + lines.map(escapeHtml).join('\n') +
-                '</div><button class="copy-btn" onclick="copyInvalid()">Copy Invalid</button></div>';
-            sec.style.display = 'block';
-            window.invalidData = lines;
-        }
-        function copyInvalid() { copyData(window.invalidData); }
-
-        function copyData(list) {
-            if (list && list.length > 0) {
-                navigator.clipboard.writeText(list.join('\n')).then(showToast);
-            }
-        }
-
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 1800);
-        }
-
-        function clearAll() {
-            inputText.value = '';
-            lineCount.textContent = '0';
-            outputSection.style.display = 'none';
-            outputContent.innerHTML = '';
-            document.getElementById('statsSection').classList.remove('show');
-            document.getElementById('invalidSection').style.display = 'none';
-            document.getElementById('invalidContent').innerHTML = '';
-            document.getElementById('duplicateSection').style.display = 'none';
-            document.getElementById('duplicateContent').innerHTML = '';
-        }
-
-        function escapeHtml(t) {
-            const m = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return t.replace(/[&<>"']/g, c => m[c]);
-        }
-    </script>
+</div>
+<div class="toast" id="toast">&#10003; Copied!</div>
+<script>
+const MOON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const SUN  = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+(function() { applyTheme(localStorage.getItem('ck-theme') || 'dark'); })();
+function applyTheme(t) { document.body.className = t; document.getElementById('themeBtn').innerHTML = t === 'light' ? MOON : SUN; }
+function toggleTheme() { const next = document.body.classList.contains('light') ? 'dark' : 'light'; applyTheme(next); localStorage.setItem('ck-theme', next); }
+let menuOpen = false;
+function toggleMenu() { menuOpen = !menuOpen; document.getElementById('menuDropdown').classList.toggle('open', menuOpen); }
+document.addEventListener('click', function(e) { if (!e.target.closest('#menuBtn') && !e.target.closest('#menuDropdown')) { menuOpen = false; document.getElementById('menuDropdown').classList.remove('open'); } });
+let currentTool = 'formatter';
+function switchTool(tool) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    document.getElementById('page-' + tool).classList.add('active');
+    document.getElementById('menu-' + tool).classList.add('active');
+    currentTool = tool; menuOpen = false; document.getElementById('menuDropdown').classList.remove('open');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'Enter') { e.preventDefault(); currentTool === 'formatter' ? formatAccounts() : buildCombo(); }
+        else if (e.key.toLowerCase() === 'l') { e.preventDefault(); currentTool === 'formatter' ? clearFormatter() : clearCombo(); }
+    }
+});
+const inputText = document.getElementById('inputText');
+inputText.addEventListener('input', function() { document.getElementById('lineCount').textContent = inputText.value.split('\n').filter(l => l.trim()).length; });
+function extractKey(line) {
+    const idx = line.indexOf('_|WARNING');
+    if (idx <= 0 || line[idx - 1] !== ':') return null;
+    const prefix = line.slice(0, idx - 1);
+    const head = prefix.split(':');
+    if (head.length !== 2 || !head[0] || !head[1]) return null;
+    return head[0] + ':' + head[1];
+}
+function parseLine(line) {
+    if (line !== line.trim()) return { error: 'Contains whitespace' };
+    if (/\s/.test(line)) return { error: 'Contains space/tab' };
+    const colonCount = (line.match(/:/g) || []).length;
+    if (colonCount !== 3 && colonCount !== 5) return { error: 'Invalid colon count' };
+    const marker = '_|WARNING';
+    const idx = line.indexOf(marker);
+    if (idx === -1) return { error: 'No cookie found' };
+    if (idx === 0 || line[idx - 1] !== ':') return { error: 'Missing colon before cookie' };
+    let prefix = line.slice(0, idx - 1);
+    const head = prefix.split(':');
+    if (head.length !== 2 || !head[0] || !head[1]) return { error: 'Invalid format' };
+    const username = head[0]; const password = head[1];
+    const rest = line.slice(idx);
+    const restParts = rest.split(':');
+    let cookie, email = null, emailPass = null;
+    if (restParts.length >= 3 && restParts[restParts.length - 2].includes('@')) {
+        cookie = restParts.slice(0, -2).join(':');
+        email = restParts[restParts.length - 2];
+        emailPass = restParts[restParts.length - 1];
+    } else { cookie = rest; }
+    if (!cookie) return { error: 'Invalid format' };
+    if (!cookie.includes(':')) return { error: 'Invalid cookie' };
+    const cookieColons = (cookie.match(/:/g) || []).length;
+    if (cookieColons > 2) return { error: 'Cookie has too many colons' };
+    return { username, password, cookie, email, emailPass };
+}
+function formatAccounts() {
+    const input = inputText.value.trim();
+    if (!input) { alert('กรุณาใส่ข้อมูล account'); return; }
+    const lines = input.split('\n').filter(l => l.length > 0);
+    const stats = { total: lines.length, valid: 0, invalid: 0, duplicate: 0 };
+    const valid = [], invalidLines = [], duplicateLines = [];
+    const keyCount = new Map();
+    lines.forEach(line => { if (!line.trim() || line !== line.trim() || /\s/.test(line)) return; const key = extractKey(line); if (key) keyCount.set(key, (keyCount.get(key) || 0) + 1); });
+    lines.forEach(line => {
+        if (!line.trim()) return;
+        if (line !== line.trim() || /\s/.test(line)) { stats.invalid++; invalidLines.push(line); return; }
+        const key = extractKey(line);
+        if (key && keyCount.get(key) > 1) { stats.duplicate++; duplicateLines.push(line); return; }
+        const acc = parseLine(line);
+        if (acc.error) { stats.invalid++; invalidLines.push(line); return; }
+        stats.valid++; valid.push(acc);
+    });
+    const firstIdx = new Map();
+    duplicateLines.forEach((line, i) => { const k = extractKey(line) || line; if (!firstIdx.has(k)) firstIdx.set(k, i); });
+    duplicateLines.sort((a, b) => (firstIdx.get(extractKey(a) || a) - firstIdx.get(extractKey(b) || b)));
+    renderStats(stats); renderOutput(valid); renderInvalid(invalidLines); renderDuplicate(duplicateLines);
+}
+function renderStats(s) {
+    document.getElementById('totalCount').textContent = s.total;
+    document.getElementById('validCount').textContent = s.valid;
+    document.getElementById('duplicateCount').textContent = s.duplicate;
+    document.getElementById('invalidCount').textContent = s.invalid;
+    document.getElementById('statsSection').classList.add('show');
+}
+function buildBoxes(accounts, copyFn) {
+    const up = [], ck = [], cb = [], ep = [];
+    accounts.forEach(a => { up.push(a.username+':'+a.password); ck.push(a.cookie); cb.push(a.username+':'+a.password+':'+a.cookie); if (a.email && a.emailPass) ep.push(a.email+':'+a.emailPass); });
+    const box = (title, cls, list, key) => '<div class="card"><div class="card-head"><div class="card-title '+cls+'">'+title+'</div><div class="lines">'+list.length+' lines</div></div><div class="out-content">'+list.map(escapeHtml).join('\n')+'</div><button class="copy-btn" onclick="'+copyFn+'(\''+key+'\')">Copy '+title+'</button></div>';
+    let html = box('User:Pass','c-green',up,'userpass')+box('Cookie','c-yellow',ck,'cookie')+box('Combo','',cb,'combo');
+    if (ep.length > 0) html += box('Email:Pass','c-yellow',ep,'emailpass');
+    return { html, data: { userpass: up, cookie: ck, combo: cb, emailpass: ep } };
+}
+function renderOutput(accounts) { const sec = document.getElementById('outputSection'); if (accounts.length === 0) { sec.style.display='none'; return; } const r = buildBoxes(accounts,'copyOutput'); document.getElementById('outputContent').innerHTML = r.html; sec.style.display='block'; window.outputData = r.data; }
+function copyOutput(key) { copyData(window.outputData[key]); }
+function renderDuplicate(lines) { const sec = document.getElementById('duplicateSection'); if (lines.length === 0) { sec.style.display='none'; return; } document.getElementById('duplicateContent').innerHTML = '<div class="group group-duplicate"><div class="group-label c-yellow">Duplicate Accounts · '+lines.length+'</div><div class="out-content c-yellow">'+lines.map(escapeHtml).join('\n')+'</div><button class="copy-btn" onclick="copyDuplicate()" style="background-color:var(--yellow);color:#000;">Copy Duplicate</button></div>'; sec.style.display='block'; window.duplicateData = lines; }
+function copyDuplicate() { copyData(window.duplicateData); }
+function renderInvalid(lines) { const sec = document.getElementById('invalidSection'); if (lines.length === 0) { sec.style.display='none'; return; } document.getElementById('invalidContent').innerHTML = '<div class="group group-invalid"><div class="group-label c-red">Invalid Accounts · '+lines.length+'</div><div class="out-content c-red">'+lines.map(escapeHtml).join('\n')+'</div><button class="copy-btn" onclick="copyInvalid()">Copy Invalid</button></div>'; sec.style.display='block'; window.invalidData = lines; }
+function copyInvalid() { copyData(window.invalidData); }
+function clearFormatter() { inputText.value=''; document.getElementById('lineCount').textContent='0'; document.getElementById('outputSection').style.display='none'; document.getElementById('outputContent').innerHTML=''; document.getElementById('statsSection').classList.remove('show'); document.getElementById('invalidSection').style.display='none'; document.getElementById('invalidContent').innerHTML=''; document.getElementById('duplicateSection').style.display='none'; document.getElementById('duplicateContent').innerHTML=''; }
+function getLines(id) { return document.getElementById(id).value.split('\n').map(l => l.trim()).filter(l => l.length > 0); }
+function updateComboCounts() {
+    const up = getLines('upInput'), ck = getLines('ckInput');
+    document.getElementById('upCount').textContent = up.length;
+    document.getElementById('ckCount').textContent = ck.length;
+    const warn = document.getElementById('mismatchWarn');
+    if (up.length > 0 && ck.length > 0 && up.length !== ck.length) { document.getElementById('matchCount').textContent = Math.min(up.length, ck.length); warn.classList.add('show'); } else { warn.classList.remove('show'); }
+}
+function buildCombo() {
+    const up = getLines('upInput'), ck = getLines('ckInput');
+    if (up.length === 0 || ck.length === 0) { alert('กรุณาใส่ข้อมูลทั้ง 2 ช่อง'); return; }
+    const count = Math.min(up.length, ck.length), result = [];
+    for (let i = 0; i < count; i++) result.push(up[i]+':'+ck[i]);
+    document.getElementById('comboOutput').textContent = result.join('\n');
+    document.getElementById('comboCount').textContent = result.length;
+    document.getElementById('comboResult').style.display = 'block';
+    window.comboData = result;
+}
+function copyCombo() { copyData(window.comboData); }
+function clearCombo() { document.getElementById('upInput').value=''; document.getElementById('ckInput').value=''; document.getElementById('upCount').textContent='0'; document.getElementById('ckCount').textContent='0'; document.getElementById('comboResult').style.display='none'; document.getElementById('mismatchWarn').classList.remove('show'); window.comboData=[]; }
+function copyData(list) { if (list && list.length > 0) navigator.clipboard.writeText(list.join('\n')).then(showToast); }
+function showToast() { const t = document.getElementById('toast'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); }
+function escapeHtml(t) { const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}; return t.replace(/[&<>"']/g, c => m[c]); }
+</script>
 </body>
 </html>
