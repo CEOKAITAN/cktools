@@ -750,17 +750,19 @@ async function loadSheet(s) {
 function parseSheetCSV(csv) {
     const rows = csv.trim().split('\n').map(r => parseCSVRow(r));
     if (rows.length < 3) return [];
-    // Row 0 = game header (merged), Row 1 = col headers, Row 2+ = data
+    // Row 0 = game header, Row 1 = col headers, Row 2+ = data
+    // Col A = Name Product, Col B = Username:Password, Col C = Cookie
     const records = [];
     for (let i = 2; i < rows.length; i++) {
-        const [username, password, cookie] = rows[i];
-        if (username && username.trim()) {
-            records.push({
-                username: username.trim(),
-                password: (password || '').trim(),
-                cookie: (cookie || '').trim()
-            });
-        }
+        const [productRaw, upRaw, cookieRaw] = rows[i];
+        if (!upRaw || !upRaw.trim()) continue;
+        const up = upRaw.trim();
+        const colonIdx = up.indexOf(':');
+        const username = colonIdx > -1 ? up.slice(0, colonIdx) : up;
+        const password = colonIdx > -1 ? up.slice(colonIdx + 1) : '';
+        const cookie = (cookieRaw || '').trim();
+        const product = (productRaw || '').trim();
+        records.push({ username, password, cookie, product });
     }
     return records;
 }
@@ -836,6 +838,7 @@ async function doLookup() {
                 <div class="lookup-game">🎮 ${escapeHtml(r.game)}</div>
             </div>
             <div class="lookup-fields">
+                ${r.product ? `<div class="lookup-field"><div class="lookup-field-label">Name Product</div><div class="lookup-field-value" onclick="copyText('${escapeAttr(r.product)}')" title="คลิกเพื่อคัดลอก">${escapeHtml(r.product)}</div></div>` : ''}
                 <div class="lookup-field">
                     <div class="lookup-field-label">Username</div>
                     <div class="lookup-field-value" onclick="copyText('${escapeAttr(r.username)}')" title="คลิกเพื่อคัดลอก">${escapeHtml(r.username)}</div>
